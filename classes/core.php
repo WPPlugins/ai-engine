@@ -1,32 +1,41 @@
 <?php
 
+define( 'MWAI_OPTIONS', [
+	'module_titles' => true,
+	'module_excerpts' => true,
+	'module_blocks' => false,
+	'shortcode_chat' => true,
+	'openai_apikey' => false,
+	'openai_usage' => []
+]);
+
 class Meow_MWAI_Core
 {
 	public $admin = null;
 	public $is_rest = false;
 	public $is_cli = false;
 	public $site_url = null;
+	public $ai = null;
 	private $option_name = 'mwai_options';
 
 	public function __construct() {
 		$this->site_url = get_site_url();
 		$this->is_rest = MeowCommon_Helpers::is_rest();
 		$this->is_cli = defined( 'WP_CLI' ) && WP_CLI;
+		$this->ai = new Meow_MWAI_AI( $this );
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 	}
 
 	function init() {
-		// Part of the core, settings and stuff
-		$this->admin = new Meow_MWAI_Admin( $this );
-
-		// Only for REST
 		if ( $this->is_rest ) {
-			new Meow_MWAI_Rest( $this, $this->admin );
+			new Meow_MWAI_Rest( $this );
 		}
-
-		// Dashboard
 		if ( is_admin() ) {
-			new Meow_MWAI_UI( $this, $this->admin );
+			new Meow_MWAI_Admin( $this );
+			new Meow_MWAI_UI( $this );
+		}
+		if ( $this->get_option( 'shortcode_chat' ) ) {
+			new Meow_MWAI_Shortcodes( $this );
 		}
 	}
 
@@ -53,24 +62,27 @@ class Meow_MWAI_Core
 	#endregion
 
 	#region Options
-
-	function get_option( $option, $default = null ) {
-		$options = $this->get_all_options();
-		return $options[$option] ?? $default;
-	}
-
-	function list_options() {
-		return array(
-			'module_titles' => true,
-			'module_excerpts' => true,
-			'module_blocks' => false,
-			'openai_apikey' => false,
-			'openai_usage' => []
-		);
-	}
-
 	function get_all_options() {
 		$options = get_option( $this->option_name, null );
+		foreach ( MWAI_OPTIONS as $key => $value ) {
+			if ( !isset( $options[$key] ) ) {
+				$options[$key] = $value;
+			}
+		}
+		return $options;
+	}
+
+	// Validate and keep the options clean and logical.
+	function sanitize_options() {
+		$options = $this->get_all_options();
+		$needs_update = false;
+
+		// We can sanitize our future options here, let's always remember it.
+		// Now, it is empty...
+
+		if ( $needs_update ) {
+			update_option( $this->option_name, $options, false );
+		}
 		return $options;
 	}
 
@@ -88,70 +100,11 @@ class Meow_MWAI_Core
 		return $this->update_options( $options );
 	}
 
-	// Validate and keep the options clean and logical.
-	function sanitize_options() {
+	function get_option( $option, $default = null ) {
 		$options = $this->get_all_options();
-		$needs_update = false;
-		// We can sanitize our future options here, let's always remember it.
-
-		if ( $needs_update ) {
-			update_option( $this->option_name, $options, false );
-		}
-		return $options;
+		return $options[$option] ?? $default;
 	}
-
 	#endregion
-
-	#region AI
-
-	function generate_titles( $postId ) {
-		$text = $this->get_text_from_postId( $postId );
-		if ( empty( $text ) ) {
-			throw new Exception( 'There is no content for this post.' );
-		}
-		$openai = new Meow_MWAI_OpenAI( $this );
-		$recommendedTitles = $openai->getRecommendedTitles( $text );
-		return $recommendedTitles;
-	}
-
-	function generate_excerpts( $postId ) {
-		$text = $this->get_text_from_postId( $postId );
-		if ( empty( $text ) ) {
-			throw new Exception( 'There is no content for this post.' );
-		}
-		$openai = new Meow_MWAI_OpenAI( $this );
-		$recommendedExcerpts = $openai->getRecommendedExcerpts( $text );
-		return $recommendedExcerpts;
-	}
-
-	function get_completions( $text, $maxTokens = 100, $temperature = 0.5, $topP = 1,
-		$frequencyPenalty = 0, $presencePenalty = 0, $bestOf = 1 ) {
-		$openai = new Meow_MWAI_OpenAI( $this );
-		$res = $openai->getCompletions( $text );
-		return $res;
-	}
-
-	function update_post_title( $postId, $title ) {
-		$post = get_post( $postId );
-		if ( !$post ) {
-			throw new Exception( 'There is no post with this ID.' );
-		}
-		$post->post_title = $title;
-		//$post->post_name = sanitize_title( $title );
-		wp_update_post( $post );
-	}
-
-	function update_post_excerpt( $postId, $excerpt ) {
-		$post = get_post( $postId );
-		if ( !$post ) {
-			throw new Exception( 'There is no post with this ID.' );
-		}
-		$post->post_excerpt = $excerpt;
-		wp_update_post( $post );
-	}
-
-	#endregion
-
 }
 
 ?>

@@ -38,10 +38,7 @@ spl_autoload_register(function ( $class ) {
 //require_once( MWAI_PATH . '/classes/api.php');
 require_once( MWAI_PATH . '/common/helpers.php');
 
-// In admin or Rest API request (REQUEST URI begins with '/wp-json/')
-if ( is_admin() || MeowCommon_Helpers::is_rest() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
-	global $mwai_core;
-	$mwai_core = new Meow_MWAI_Core();
-}
+global $mwai_core;
+$mwai_core = new Meow_MWAI_Core();
 
 ?>

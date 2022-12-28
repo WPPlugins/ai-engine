@@ -2,22 +2,19 @@
 
 class Meow_MWAI_Rest
 {
-	private $admin = null;
 	private $core = null;
 	private $namespace = 'ai-engine/v1';
 
-	public function __construct( $core, $admin ) {
+	public function __construct( $core ) {
 		if ( !current_user_can( 'administrator' ) ) {
 			return;
 		} 
 		$this->core = $core;
-		$this->admin = $admin;
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 	}
 
 	function rest_api_init() {
 		try {
-			// SETTINGS
 			register_rest_route( $this->namespace, '/update_option', array(
 				'methods' => 'POST',
 				'permission_callback' => array( $this->core, 'can_access_settings' ),
@@ -28,20 +25,20 @@ class Meow_MWAI_Rest
 				'permission_callback' => array( $this->core, 'can_access_settings' ),
 				'callback' => array( $this, 'rest_all_settings' ),
 			) );
-			register_rest_route( $this->namespace, '/completions', array(
+			register_rest_route( $this->namespace, '/make_completions', array(
 				'methods' => 'POST',
 				'permission_callback' => array( $this->core, 'can_access_features' ),
-				'callback' => array( $this, 'completions' ),
+				'callback' => array( $this, 'make_completions' ),
 			) );
-			register_rest_route( $this->namespace, '/generate_titles', array(
+			register_rest_route( $this->namespace, '/make_titles', array(
 				'methods' => 'POST',
 				'permission_callback' => array( $this->core, 'can_access_features' ),
-				'callback' => array( $this, 'generate_titles' ),
+				'callback' => array( $this, 'make_titles' ),
 			) );
-			register_rest_route( $this->namespace, '/generate_excerpts', array(
+			register_rest_route( $this->namespace, '/make_excerpts', array(
 				'methods' => 'POST',
 				'permission_callback' => array( $this->core, 'can_access_features' ),
-				'callback' => array( $this, 'generate_excerpts' ),
+				'callback' => array( $this, 'make_excerpts' ),
 			) );
 			register_rest_route( $this->namespace, '/update_post_title', array(
 				'methods' => 'POST',
@@ -62,7 +59,7 @@ class Meow_MWAI_Rest
 	function rest_all_settings() {
 		return new WP_REST_Response( [
 			'success' => true,
-			'data' => $this->admin->get_all_options()
+			'data' => $this->core->get_all_options()
 		], 200 );
 	}
 
@@ -80,6 +77,11 @@ class Meow_MWAI_Rest
 		}
 	}
 
+	function createValidationResult( $result = true, $message = null) {
+		$message = $message ? $message : __( 'OK', 'ai-engine' );
+		return [ 'result' => $result, 'message' => $message ];
+	}
+
 	function validate_updated_option( $option_name ) {
 		$option_checkbox = get_option( 'mwai_option_checkbox', false );
 		$option_text = get_option( 'mwai_option_text', 'Default' );
@@ -90,28 +92,45 @@ class Meow_MWAI_Rest
 		return $this->createValidationResult();
 	}
 
-	function generate_titles( $request ) {
+	function make_completions( $request ) {
 		try {
 			$params = $request->get_json_params();
-			$postId = intval( $params['postId'] );
-			$titles = $this->core->generate_titles( $postId );
-			$success = !!$titles;
-			$message = __( $success ? 'OK' : "Could not fetch titles.", 'ai-engine' );
-			return new WP_REST_Response([ 'success' => $success, 'message' => $message, 'titles' => $titles ], 200 );
+			$prompt = $params['prompt'];
+			$query = new Meow_MWAI_Query( $prompt, 2048 );
+			$answer = $this->core->ai->run( $query );
+			return new WP_REST_Response([ 'success' => true, 'data' => $answer->result, 'usage' => $answer->usage ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
 		}
 	}
 
-	function generate_excerpts( $request ) {
+	function make_titles( $request ) {
 		try {
 			$params = $request->get_json_params();
 			$postId = intval( $params['postId'] );
-			$excerpts = $this->core->generate_excerpts( $postId );
-			$success = !!$excerpts;
-			$message = __( $success ? 'OK' : "Could not fetch excerpts.", 'ai-engine' );
-			return new WP_REST_Response([ 'success' => $success, 'message' => $message, 'excerpts' => $excerpts ], 200 );
+			$text = $this->core->get_text_from_postId( $postId );
+			$prompt = "Create short SEO-friendly title for this text: " . $text;
+			$query = new Meow_MWAI_Query( $prompt, 40 );
+			$query->setMaxResults( 5 );
+			$answer = $this->core->ai->run( $query );
+			return new WP_REST_Response([ 'success' => true, 'data' => $answer->results ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function make_excerpts( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$postId = intval( $params['postId'] );
+			$text = $this->core->get_text_from_postId( $postId );
+			$prompt = "Create SEO-friendly introduction to this text, 120 to 170 characters max, no URLs: " . $text;
+			$query = new Meow_MWAI_Query( $prompt, 140 );
+			$query->setMaxResults( 5 );
+			$answer = $this->core->ai->run( $query );
+			return new WP_REST_Response([ 'success' => true, 'data' => $answer->results ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
@@ -122,7 +141,14 @@ class Meow_MWAI_Rest
 		try {
 			$params = $request->get_json_params();
 			$title = sanitize_text_field( $params['title'] );
-			$this->core->update_post_title( $params['postId'], $title );
+			$postId = intval( $params['postId'] );
+			$post = get_post( $postId );
+			if ( !$post ) {
+				throw new Exception( 'There is no post with this ID.' );
+			}
+			$post->post_title = $title;
+			//$post->post_name = sanitize_title( $title );
+			wp_update_post( $post );
 			return new WP_REST_Response([ 'success' => true, 'message' => "Title updated." ], 200 );
 		}
 		catch ( Exception $e ) {
@@ -134,30 +160,17 @@ class Meow_MWAI_Rest
 		try {
 			$params = $request->get_json_params();
 			$excerpt = sanitize_text_field( $params['excerpt'] );
-			$this->core->update_post_excerpt( $params['postId'], $excerpt );
+			$postId = intval( $params['postId'] );
+			$post = get_post( $postId );
+			if ( !$post ) {
+				throw new Exception( 'There is no post with this ID.' );
+			}
+			$post->post_excerpt = $excerpt;
+			wp_update_post( $post );
 			return new WP_REST_Response([ 'success' => true, 'message' => "Excerpt updated." ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
 		}
-	}
-
-	function completions( $request ) {
-		try {
-			$params = $request->get_json_params();
-			$res = $this->core->get_completions( $params['prompt'] );
-			$success = !!$res;
-			$message = __( $success ? 'OK' : "Could not fetch completions.", 'ai-engine' );
-			return new WP_REST_Response([ 'success' => $success, 'message' => $message,
-				'data' => $res['data'], 'usage' => $res['usage'] ], 200 );
-		}
-		catch ( Exception $e ) {
-			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
-		}
-	}
-
-	function createValidationResult( $result = true, $message = null) {
-		$message = $message ? $message : __( 'OK', 'ai-engine' );
-		return ['result' => $result, 'message' => $message];
 	}
 }
