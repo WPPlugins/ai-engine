@@ -208,7 +208,7 @@ class Meow_MWAI_Shortcodes {
         <?= $addReplyFn ?>('<?= $atts['ai_prompt'] ?>' + '<?= $atts['start_sentence'] ?>', 'ai');
       </script>
 
-    <?
+    <?php
     $output = ob_get_contents();
     ob_end_clean();
     return $output;
