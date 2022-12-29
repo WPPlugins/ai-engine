@@ -56,6 +56,9 @@ class Meow_MWAI_AI {
         "verify_peer_name" => false,
       )
     );
+
+    //error_log( print_r( $options, 1 ) );
+
     $context = stream_context_create( $options );
     $response = file_get_contents( $url, false, $context );
     if ( !$response ) {

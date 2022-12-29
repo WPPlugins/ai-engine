@@ -27,7 +27,15 @@ class Meow_MWAI_Shortcodes {
     try {
 			$params = $request->get_json_params();
 			$prompt = $params['prompt'];
-			$query = new Meow_MWAI_Query( $prompt, 2048 );
+      $model = $params['model'];
+      $temperature = $params['temperature'];
+			$query = new Meow_MWAI_Query( $prompt, 1024 );
+      if ( $model ) {
+        $query->setModel( $model );
+      }
+      if ( $temperature ) {
+        $query->setTemperature( $temperature );
+      }
 			$answer = $this->core->ai->run( $query );
 			return new WP_REST_Response([ 'success' => true, 'data' => $answer->result, 'usage' => $answer->usage ], 200 );
 		}
@@ -41,15 +49,17 @@ class Meow_MWAI_Shortcodes {
       'context' => "Converse as if you were Michael Jackson, talking from the afterlife. Be friendly, creative.",
       'ai_prompt' => "Michael: ",
       'user_prompt' => "You: ",
+      'sys_prompt' => "System: ",
       'start_sentence' => "Hi, my friend.",
-      'temperature' => 0.8,
-      'engine' => 'davinci'
+      'model' => 'text-davinci-003',
+      'temperature' => 0.8
     ], $atts, 'meow_ai' );
 
     $id = uniqid();
     $apiUrl = get_rest_url( null, 'ai-engine/v1/chat' );
     $onSentClickFn = "mwai_{$id}_onSendClick";
     $addReplyFn = "mwai_{$id}_addReply";
+    $convertToHtmlFn = "mwai_{$id}_convertToHtml";
     ob_start();
     ?>
 
@@ -58,20 +68,86 @@ class Meow_MWAI_Shortcodes {
         </div>
         <div class="mwai-input">
           <input type="text" placeholder="Type your message here..." />
-          <button onclick="<?= $onSentClickFn ?>()">Send</button>
+          <button>Send</button>
         </div>
       </div>
 
       <script>
+        function <?= $convertToHtmlFn ?>(text) {
+          // Split the input text into an array of lines
+          const lines = text.split('\n');
+
+          // Initialize an empty array to store the HTML
+          const html = [];
+
+          // Initialize a variable to keep track of the current list type (none, bullet, or numbered)
+          let listType = 'none';
+
+          // Iterate over the lines
+          for (const line of lines) {
+            // Check if the line is a bullet point
+            if (line.startsWith('*')) {
+              // If the current list type is not a bullet point, start a new bullet point list
+              if (listType !== 'bullet') {
+                html.push('<ul>');
+                listType = 'bullet';
+              }
+              // Add the bullet point to the HTML
+              html.push(`<li>${line.substring(1).trim()}</li>`);
+            }
+            // Check if the line is a numbered list item
+            else if (line.match(/^\d+\./)) {
+              // If the current list type is not a numbered list, start a new numbered list
+              if (listType !== 'numbered') {
+                html.push('<ol>');
+                listType = 'numbered';
+              }
+              // Add the numbered list item to the HTML
+              html.push(`<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`);
+            }
+            // Otherwise, the line is not part of a list
+            else {
+              // If the current list type is not "none", close the current list
+              if (listType !== 'none') {
+                html.push(listType === 'bullet' ? '</ul>' : '</ol>');
+                listType = 'none';
+              }
+
+              // If the line starts with the AI or user prompt, replace it with a span with the appropriate class
+              if (line.startsWith('<?= $atts['ai_prompt'] ?>')) {
+                html.push(`<p><span class="mwai-ai-prompt"><?= $atts['ai_prompt'] ?></span>${line.substring('<?= $atts['ai_prompt'] ?>'.length).trim()}</p>`);
+              }
+              else if (line.startsWith('<?= $atts['user_prompt'] ?>')) {
+                html.push(`<p><span class="mwai-user-prompt"><?= $atts['user_prompt'] ?></span>${line.substring('<?= $atts['user_prompt'] ?>'.length).trim()}</p>`);
+              }
+              else {
+                // Otherwise, add the line as a paragraph to the HTML
+                html.push(`<p>${line.trim()}</p>`);
+              }
+            }
+          }
+
+          // If the current list type is not "none", close the current list
+          if (listType !== 'none') {
+            html.push(listType === 'bullet' ? '</ul>' : '</ol>');
+          }
+
+          // Join the HTML array into a single string and return it
+          return html.join('');
+        }
 
         // Function to add a reply in the conversation
         function <?= $addReplyFn ?>(text, type = 'user') {
           var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
+          text = <?= $convertToHtmlFn ?>(text);
           if (type === 'ai') {
             conversation.innerHTML += '<div class="mwai-ai">' + text + '</div>';
           }
+          else if (type === 'system') {
+            conversation.innerHTML += '<div class="mwai-system">' + text + '</div>';
+          }
           else {
-            conversation.innerHTML += '<div class="mwai-user">' + '<?= $atts['user_prompt'] ?>' + text + '</div>';
+            conversation.innerHTML += '<div class="mwai-user">' + text + '</div>';
           }
         }
 
@@ -84,7 +160,7 @@ class Meow_MWAI_Shortcodes {
 
           // Add the user reply
           var input = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input input');
-          <?= $addReplyFn ?>(input.value, 'user');
+          <?= $addReplyFn ?>('<?= $atts['user_prompt'] ?>' + input.value, 'user');
           input.value = '';
           input.disabled = true;
 
@@ -92,11 +168,21 @@ class Meow_MWAI_Shortcodes {
           var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
           var promptToUse = '<?= $atts['context'] ?>' + conversation.innerText + '\n';
           fetch('<?= $apiUrl ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: promptToUse })
+            body: JSON.stringify({ 
+              prompt: promptToUse,
+              model: '<?= $atts['model'] ?>',
+              temperature: '<?= $atts['temperature'] ?>'
+            })
           })
           .then(response => response.json())
           .then(data => {
-            <?= $addReplyFn ?>(data.data, 'ai');
+            console.log(data);
+            if (!data.success) {
+              <?= $addReplyFn ?>('<?= $atts['sys_prompt'] ?>' + data.message, 'system');
+            }
+            else {
+              <?= $addReplyFn ?>(data.data, 'ai');
+            }
             button.disabled = false;
             input.disabled = false;
           })
@@ -106,6 +192,18 @@ class Meow_MWAI_Shortcodes {
             input.disabled = false;
           });
         }
+
+        var input = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input input');
+        input.addEventListener('keypress', (event) => {
+          if (event.keyCode === 13) {
+            <?= $onSentClickFn ?>(); 
+          }
+        });
+
+        var button = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input button');
+        button.addEventListener('click', (event) => {
+          <?= $onSentClickFn ?>(); 
+        });
 
         <?= $addReplyFn ?>('<?= $atts['ai_prompt'] ?>' + '<?= $atts['start_sentence'] ?>', 'ai');
       </script>

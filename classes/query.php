@@ -24,6 +24,9 @@ class Meow_MWAI_Query {
    */
   public function setModel( $model ) {
     $this->model = $model;
+    if ( $model !== 'text-davinci-003' && $this->maxTokens > 512 ) {
+      $this->maxTokens = 512;
+    }
   }
 
   /**
@@ -51,6 +54,13 @@ class Meow_MWAI_Query {
    * @param float $temperature The temperature.
    */
   public function setTemperature( $temperature ) {
+    $temperature = floatval( $temperature );
+    if ( $temperature > 1 ) {
+      $temperature = 1;
+    }
+    if ( $temperature < 0 ) {
+      $temperature = 0;
+    }
     $this->temperature = $temperature;
   }
 

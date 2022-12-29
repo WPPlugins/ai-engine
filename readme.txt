@@ -5,7 +5,7 @@ Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.0.3
+Stable tag: 0.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,9 @@ The AI Engine utilizes the API from [OpenAI](https://beta.openai.com). This plug
 Languages: English.
 
 == Changelog ==
+
+= 0.0.4 =
+* Updated: Improved the chatbot, with more parameters (temperature, model), and a better layout (HTML only).
 
 = 0.0.3 =
 * Add: Lightweight chatbot (beta).
