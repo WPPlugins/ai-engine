@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Meow_MWAI_Shortcodes {
   private $core = null;
