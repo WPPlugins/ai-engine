@@ -92,11 +92,22 @@ class Meow_MWAI_Rest
 		return $this->createValidationResult();
 	}
 
+	function setup_query_based_on_params( $query, $params ) {
+		if ( isset( $params['model'] ) ) {
+			$query->setModel( $params['model'] );
+		}
+		if ( isset( $params['temperature'] ) ) {
+			$query->setTemperature( $params['temperature'] );
+		}
+		return $query;
+	}
+
 	function make_completions( $request ) {
 		try {
 			$params = $request->get_json_params();
 			$prompt = $params['prompt'];
 			$query = new Meow_MWAI_Query( $prompt, 2048 );
+			$query = $this->setup_query_based_on_params( $query, $params );
 			$answer = $this->core->ai->run( $query );
 			return new WP_REST_Response([ 'success' => true, 'data' => $answer->result, 'usage' => $answer->usage ], 200 );
 		}
