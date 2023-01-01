@@ -1,11 +1,11 @@
-=== AI Engine: ChatGPT, AI Tools, GPT-3, AI Playground ===
+=== AI Engine: ChatGPT, GPT-3 Content Generation, AI Tools & Playground ===
 Contributors: TigrouMeow
-Tags: gpt-3, openai, ai, chatgpt, chatbot, automation, translation, title, excerpt, toolbox
+Tags: gpt-3, openai, ai, chatgpt, chatbot, content generation, automation, translation, title, excerpt, toolbox
 Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.0.7
+Stable tag: 0.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,11 +23,12 @@ There's no doubt that we'll have a lot to discuss and options to consider as we 
 
 == Features ==
 
-* Generate new titles for your posts.
-* Generate new excerpts for your posts.
+* Generate new content.
+* Quickly create new titles for your posts.
+* Quickly create new excerpts for your posts.
 * Keep track of your OpenAI usage stats.
 * AI Playground: Translation, correction, ChatGPT-like discussions, etc.
-* ChatGPT-like discussions on your website, with a shortcode.
+* ChatGPT-like chatbot for your website (shortcode).
 * Coming next: translation to any language.
 * Coming next: improve a specific paragraph.
 * And more features coming soon!
@@ -52,6 +53,9 @@ The AI Engine utilizes the API from [OpenAI](https://beta.openai.com). This plug
 Languages: English.
 
 == Changelog ==
+
+= 0.0.8 =
+* Fix: A few fixes in the playground.
 
 = 0.0.7 =
 * Fix: Little issue in the playground.

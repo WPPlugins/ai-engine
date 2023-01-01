@@ -6,7 +6,8 @@ define( 'MWAI_OPTIONS', [
 	'module_blocks' => false,
 	'shortcode_chat' => true,
 	'openai_apikey' => false,
-	'openai_usage' => []
+	'openai_usage' => [],
+	'extra_models' => ""
 ]);
 
 class Meow_MWAI_Core

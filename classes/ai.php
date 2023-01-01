@@ -66,7 +66,8 @@ class Meow_MWAI_AI {
     }
     $data = json_decode( $response, true );
     $answer = new Meow_MWAI_Answer( $query );
-    $usage = $this->record_usage( $data['model'], $data['usage']['prompt_tokens'], $data['usage']['completion_tokens'] );
+    $usage = $this->record_usage( $data['model'], $data['usage']['prompt_tokens'],
+      $data['usage']['completion_tokens'] );
     $answer->setUsage( $usage );
     $answer->setChoices( $data['choices'] );
     return $answer;

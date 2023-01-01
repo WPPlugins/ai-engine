@@ -14,6 +14,8 @@ class Meow_MWAI_UI {
 		add_management_page( 'AI Playground', __( 'AI Playground', 'ai-engine' ), 'manage_options', 
 			'mwai_dashboard', array( $this, 'ai_playground' ) );
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 100 );
+		add_submenu_page( 'edit.php', 'Generate ', 'Generate ', 'manage_options', 'mwai_generate', 
+			array( $this, 'ai_generate' ), 2 );
 	}
 
 	function admin_bar_menu( $wp_admin_bar ) {
@@ -31,6 +33,10 @@ class Meow_MWAI_UI {
 
 	public function ai_playground() {
 		echo '<div id="mwai-playground"></div>';
+	}
+
+	public function ai_generate() {
+		echo '<div id="mwai-generator"></div>';
 	}
 
 	function post_row_actions( $actions, $post ) {
