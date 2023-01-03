@@ -56,9 +56,6 @@ class Meow_MWAI_AI {
         "verify_peer_name" => false,
       )
     );
-
-    //error_log( print_r( $options, 1 ) );
-
     $context = stream_context_create( $options );
     $response = file_get_contents( $url, false, $context );
     if ( !$response ) {
@@ -66,6 +63,7 @@ class Meow_MWAI_AI {
     }
     $data = json_decode( $response, true );
     $answer = new Meow_MWAI_Answer( $query );
+    //error_log( print_r( $data, 1 ) );
     $usage = $this->record_usage( $data['model'], $data['usage']['prompt_tokens'],
       $data['usage']['completion_tokens'] );
     $answer->setUsage( $usage );

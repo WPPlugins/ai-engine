@@ -1,5 +1,7 @@
 <?php
 
+require_once( MWAI_PATH . '/vendor/autoload.php' );
+
 define( 'MWAI_OPTIONS', [
 	'module_titles' => true,
 	'module_excerpts' => true,
@@ -106,6 +108,12 @@ class Meow_MWAI_Core
 		return $options[$option] ?? $default;
 	}
 	#endregion
+
+	function markdown_to_blocks( $content ) {
+		$Parsedown = new Parsedown();
+		$content = $Parsedown->text( $content );
+		return $content;
+	}
 }
 
 ?>

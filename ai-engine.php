@@ -2,7 +2,7 @@
 /*
 Plugin Name: AI Engine: ChatGPT, GPT-3 Content Generation, AI Tools & Playground
 Plugin URI: https://wordpress.org/plugins/ai-engine/
-Description: Want to give your WordPress site a boost with some AI magic? AI Engine is here to help! It suggests new titles, excerpts, add a chatbot, and open the door to a whole new AI world through the AI Playground! It keeps track of your API usage stats too.
+Description: Boost your WordPress site with AI magic using AI Engine! It generates content, suggests new titles and excerpts, adds a chatbot, and allows access to the AI Playground. It also tracks API usage statistics.
 Version: 0.0.8
 Author: Jordy Meow
 Author URI: https://jordymeow.com

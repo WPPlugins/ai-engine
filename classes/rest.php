@@ -50,6 +50,11 @@ class Meow_MWAI_Rest
 				'permission_callback' => array( $this->core, 'can_access_features' ),
 				'callback' => array( $this, 'update_post_excerpt' ),
 			) );
+			register_rest_route( $this->namespace, '/create_post', array(
+				'methods' => 'POST',
+				'permission_callback' => array( $this->core, 'can_access_features' ),
+				'callback' => array( $this, 'create_post' ),
+			) );
 		}
 		catch ( Exception $e ) {
 			var_dump( $e );
@@ -179,6 +184,29 @@ class Meow_MWAI_Rest
 			$post->post_excerpt = $excerpt;
 			wp_update_post( $post );
 			return new WP_REST_Response([ 'success' => true, 'message' => "Excerpt updated." ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function create_post( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$title = sanitize_text_field( $params['title'] );
+			// Sanitize content that contains line returns and HTML tags
+			$content = sanitize_textarea_field( $params['content'] );
+			$excerpt = sanitize_text_field( $params['excerpt'] );
+			//$postType = sanitize_text_field( $params['postType'] );
+			$post = new stdClass();
+			$post->post_title = $title;
+			$post->post_excerpt = $excerpt;
+			$post->post_content = $content;
+			$post->post_status = 'draft';
+			$post->post_type = 'post';
+			$post->post_content = $this->core->markdown_to_blocks( $post->post_content );
+			$postId = wp_insert_post( $post );
+			return new WP_REST_Response([ 'success' => true, 'postId' => $postId ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );

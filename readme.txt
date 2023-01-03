@@ -5,17 +5,17 @@ Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.0.8
+Stable tag: 0.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Want to give your WordPress site a boost with some AI magic? AI Engine is here to help! It suggests new titles, excerpts, add a chatbot, and open the door to a whole new AI world through the AI Playground! It keeps track of your API usage stats too.
+Boost your WordPress site with AI magic using AI Engine. It generates content, suggests new titles and excerpts, adds a chatbot, and allows access to the AI Playground. It also tracks API usage statistics.
 
 == Description ==
 
 Ready to take your WordPress site to the next level with the power of AI? The AI Engine plugin is here to help!
 
-Currently, it suggests titles and excerpts for your posts and keeps track of your OpenAI usage stats. There is also a shortcode that will create a ChatGPT-like discussion on your website. And finally, you'll find an AI Playground in which you will be able to do a bit of everything (translation, correction, SEO-related tasks, discussions, etc). But that's just the beginning!
+Currently, it generates content for your articles, suggests titles and excerpts for your posts and keeps track of your OpenAI usage stats. There is also a shortcode that will create a ChatGPT-like discussion on your website. And finally, you'll find an AI Playground in which you will be able to do a bit of everything (translation, correction, SEO-related tasks, discussions, etc). But that's just the beginning!
 
 We'll be continually adding new tools and features to the AI Engine based on your feedback, and even offering an API so other plugins can make use of it. Our goal is to create a toolbox full of useful AI tools and a framework that other plugins can build upon. And don't forget, our other Meow Apps plugins will soon be able to tap into the AI Engine too.
 
@@ -32,6 +32,10 @@ There's no doubt that we'll have a lot to discuss and options to consider as we 
 * Coming next: translation to any language.
 * Coming next: improve a specific paragraph.
 * And more features coming soon!
+
+== Content Generator ==
+
+Visit the Content Generator under Tools or Posts, it's called either Generate New or Content Generator. This feature is beta, so let me know how you use it and how I could enhance it for you! You can play with the parameters and even modify the prompts.
 
 == Shortcode: A chatbot like ChatGPT ==
 
@@ -53,6 +57,9 @@ The AI Engine utilizes the API from [OpenAI](https://beta.openai.com). This plug
 Languages: English.
 
 == Changelog ==
+
+= 0.0.9 =
+* Add: Content Generator (available under Tools and Posts).
 
 = 0.0.8 =
 * Fix: A few fixes in the playground.
