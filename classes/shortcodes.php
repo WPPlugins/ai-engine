@@ -46,6 +46,7 @@ class Meow_MWAI_Shortcodes {
 
   function chat( $atts ) {
     $atts = shortcode_atts([
+      'id' => uniqid(),
       'context' => "Converse as if you were Michael Jackson, talking from the afterlife. Be friendly, creative.",
       'ai_prompt' => "Michael: ",
       'user_prompt' => "You: ",
@@ -54,8 +55,8 @@ class Meow_MWAI_Shortcodes {
       'model' => 'text-davinci-003',
       'temperature' => 0.8
     ], $atts, 'meow_ai' );
-
-    $id = uniqid();
+    $atts = apply_filters( 'mwai_chat_atts', $atts );
+    $id = $atts['id'];
     $apiUrl = get_rest_url( null, 'ai-engine/v1/chat' );
     $onSentClickFn = "mwai_{$id}_onSendClick";
     $addReplyFn = "mwai_{$id}_addReply";
