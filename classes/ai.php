@@ -3,6 +3,7 @@
 class Meow_MWAI_AI {
   private $core = null;
   private $model = "text-davinci-003";
+  private $apiKey = null;
 
   public function __construct( $core ) {
     $this->core = $core;

@@ -10,7 +10,7 @@ class Meow_MWAI_Shortcodes {
     add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 
     // If we apply ChatGPT styles
-    add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
+    //add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
   }
 
   function rest_api_init() {
