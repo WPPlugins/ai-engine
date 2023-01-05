@@ -8,6 +8,9 @@ class Meow_MWAI_Shortcodes {
     $this->core = $core;
     add_shortcode( 'mwai_chat', array( $this, 'chat' ) );
     add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
+
+    // If we apply ChatGPT styles
+    add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
   }
 
   function rest_api_init() {
@@ -22,6 +25,68 @@ class Meow_MWAI_Shortcodes {
 			var_dump( $e );
 		}
 	}
+
+  function chatgpt_style( $html, $atts ) {
+    // If needed, we can use the $id to apply styles
+    $id = $atts['id']; // This could be replace by the ID of a specific chatbot
+    return "
+      <style>
+        #mwai-chat-$id {
+          background: #343541;
+          color: white;
+          font-size: 15px;
+        }
+
+        #mwai-chat-$id  ol {
+          padding: 0;
+          margin: 0 0 0 20px;
+        }
+        
+        #mwai-chat-$id .mwai-reply {
+          display: flex;
+        }
+
+        #mwai-chat-$id .mwai-user, #mwai-chat-$id .mwai-ai {
+          padding: 20px;
+        }
+        
+        #mwai-chat-$id .mwai-ai {
+          background: #454654;
+        }
+
+        #mwai-chat-$id .mwai-user-name, #mwai-chat-$id .mwai-ai-name {
+          color: #a0a0a0;
+          margin-right: 5px;
+          min-width: 80px;
+        }
+
+        #mwai-chat-$id .mwai-input {
+          display: flex;
+          padding: 15px;
+        }
+
+        #mwai-chat-$id .mwai-input input {
+          background: #40414f;
+          color: white;
+          flex: auto;
+          padding: 15px;
+          border: none;
+          border-radius: 5px;
+          font-size: 15px;
+        }
+
+        #mwai-chat-$id .mwai-input button {
+          background: none;
+          color: white;
+          border: 1px solid #40414f;
+          margin-left: 15px;
+          width: 80px;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+      </style>
+    " . $html;
+  }
 
   function rest_chat( $request ) {
     try {
@@ -48,9 +113,9 @@ class Meow_MWAI_Shortcodes {
     $defaults = apply_filters( 'mwai_chat_atts', [
       'id' => uniqid(),
       'context' => "Converse as if you were an AI assistant. Be friendly, creative.",
-      'ai_prompt' => "AI: ",
-      'user_prompt' => "You: ",
-      'sys_prompt' => "System: ",
+      'ai_name' => "AI: ",
+      'user_name' => "You: ",
+      'sys_name' => "System: ",
       'start_sentence' => "Hi! How can I help you?",
       'model' => 'text-davinci-003',
       'temperature' => 0.8
@@ -61,6 +126,8 @@ class Meow_MWAI_Shortcodes {
     $onSentClickFn = "mwai_{$id}_onSendClick";
     $addReplyFn = "mwai_{$id}_addReply";
     $convertToHtmlFn = "mwai_{$id}_convertToHtml";
+    $aiName = trim($atts['ai_name']);
+    $userName = trim($atts['user_name']);
     ob_start();
     ?>
 
@@ -114,16 +181,24 @@ class Meow_MWAI_Shortcodes {
                 listType = 'none';
               }
 
-              // If the line starts with the AI or user prompt, replace it with a span with the appropriate class
-              if (line.startsWith('<?= $atts['ai_prompt'] ?>')) {
-                html.push(`<p><span class="mwai-ai-prompt"><?= $atts['ai_prompt'] ?></span>${line.substring('<?= $atts['ai_prompt'] ?>'.length).trim()}</p>`);
+              // console.log('AI PROMPT: ', '|<?= $aiName ?>|');
+              // console.log('USER PROMPT: ', '|<?= $userName ?>|');
+              // console.log(line);
+
+              if (line.trim() === '') {
+                continue;
               }
-              else if (line.startsWith('<?= $atts['user_prompt'] ?>')) {
-                html.push(`<p><span class="mwai-user-prompt"><?= $atts['user_prompt'] ?></span>${line.substring('<?= $atts['user_prompt'] ?>'.length).trim()}</p>`);
+              // If the line starts with the AI or user prompt, replace it with a span with the appropriate class
+              else if (line.startsWith('<?= $aiName ?>')) {
+                html.push(`<span class="mwai-ai-name"><?= $aiName ?> </span><span>${line.substring('<?= $aiName ?>'.length).trim()}</span>`);
+              }
+              else if (line.startsWith('<?= $userName ?>')) {
+                html.push(`<span class="mwai-user-name"><?= $userName ?> </span><span>${line.substring('<?= $userName ?>'.length).trim()}</span>`);
               }
               else {
                 // Otherwise, add the line as a paragraph to the HTML
-                html.push(`<p>${line.trim()}</p>`);
+                console.log("We have something here...");
+                html.push(`<span>${line.trim()}</span>`);
               }
             }
           }
@@ -142,44 +217,51 @@ class Meow_MWAI_Shortcodes {
           var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
           text = <?= $convertToHtmlFn ?>(text);
           if (type === 'ai') {
-            conversation.innerHTML += '<div class="mwai-ai">' + text + '</div>';
+            conversation.innerHTML += '<div class="mwai-reply mwai-ai">' + text + '</div>';
           }
           else if (type === 'system') {
-            conversation.innerHTML += '<div class="mwai-system">' + text + '</div>';
+            conversation.innerHTML += '<div class="mwai-reply mwai-system">' + text + '</div>';
           }
           else {
-            conversation.innerHTML += '<div class="mwai-user">' + text + '</div>';
+            conversation.innerHTML += '<div class="mwai-reply mwai-user">' + text + '</div>';
           }
         }
 
         // Function to request the completion
         function <?= $onSentClickFn ?>() {
+          let input = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input input');
+          let inputText = input.value.trim();
+
+          if (inputText === '') {
+            return;
+          }
 
           // Disable the button
           var button = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input button');
           button.disabled = true;
 
           // Add the user reply
-          var input = document.querySelector('#mwai-chat-<?= $id ?> .mwai-input input');
-          <?= $addReplyFn ?>('<?= $atts['user_prompt'] ?>' + input.value, 'user');
+          <?= $addReplyFn ?>('<?= $userName ?>' + inputText, 'user');
           input.value = '';
           input.disabled = true;
 
           // Request the completion and add the reply
           var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
-          var promptToUse = '<?= $atts['context'] ?>' + conversation.innerText + '\n';
+          var promptToUse = '<?= $atts['context'] ?>' + '\n\n' + conversation.innerText + '\n';
+          const data = { 
+            prompt: promptToUse,
+            model: '<?= $atts['model'] ?>',
+            temperature: '<?= $atts['temperature'] ?>'
+          };
+          console.log('Sent: ', data);
           fetch('<?= $apiUrl ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              prompt: promptToUse,
-              model: '<?= $atts['model'] ?>',
-              temperature: '<?= $atts['temperature'] ?>'
-            })
+            body: JSON.stringify(data)
           })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
+            console.log('Received: ', data);
             if (!data.success) {
-              <?= $addReplyFn ?>('<?= $atts['sys_prompt'] ?>' + data.message, 'system');
+              <?= $addReplyFn ?>('<?= $atts['sys_name'] ?>' + data.message, 'system');
             }
             else {
               <?= $addReplyFn ?>(data.data, 'ai');
@@ -206,12 +288,13 @@ class Meow_MWAI_Shortcodes {
           <?= $onSentClickFn ?>(); 
         });
 
-        <?= $addReplyFn ?>('<?= $atts['ai_prompt'] ?>' + '<?= $atts['start_sentence'] ?>', 'ai');
+        <?= $addReplyFn ?>('<?= $aiName ?>' + '<?= $atts['start_sentence'] ?>', 'ai');
       </script>
 
     <?php
     $output = ob_get_contents();
     ob_end_clean();
+    $output = apply_filters( 'mwai_chat_html', $output, $atts );
     return $output;
   }
 }

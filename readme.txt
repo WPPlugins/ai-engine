@@ -5,7 +5,7 @@ Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.1.2
+Stable tag: 0.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ Visit the Content Generator under Tools or Posts, it's called either Generate Ne
 
 The current chatbot uses vanilla JS on your frontend, so it's extremely lightweight. There is no CSS, so you can style it as you wish. Enable it in the settings, and you can use the shortcode this way:
 
-[mwai_chat context="Converse as if you were Michael Jackson, talking from the afterlife." ai_prompt="Michael: " user_prompt="You: " start_sentence="Hi, my friend." ]
+[mwai_chat context="Converse as if you were Michael Jackson, talking from the afterlife." ai_name="Michael: " user_name="You: " start_sentence="Hi, my friend." ]
 
 == Open AI ==
 
@@ -58,9 +58,13 @@ Languages: English.
 
 == Changelog ==
 
+= 0.1.3 =
+* Update: Sorry, the name of the parameters in the chatbot were confusing. I've changed them to make it more clear.
+* Add: New filter, and the possibility to add some CSS to the chatbot, directly through coding. Have a look on https://meowapps.com/ai-engine/.
+* Info: Please let me know how you use the Content Generator, and how I could enhance it for you! Any other feedback you might have as well. And for the motivation, don't hesitate to leave me a little review. Thanks a lot and Happy New Year 2023 🥳
+
 = 0.1.2 =
 * Add: New filter for the chatbot. More info here: https://meowapps.com/ai-engine/.
-* Info: Please let me know how you use the Content Generator, and how I could enhance it for you! Any other feedback you might have as well. And for the motivation, don't hesitate to leave me a little review. Thanks a lot and Happy New Year 2023 🥳
 
 = 0.1.0 =
 * Add: Content Generator (available under Tools and Posts).
