@@ -45,17 +45,17 @@ class Meow_MWAI_Shortcodes {
   }
 
   function chat( $atts ) {
-    $atts = shortcode_atts([
+    $defaults = apply_filters( 'mwai_chat_atts', [
       'id' => uniqid(),
-      'context' => "Converse as if you were Michael Jackson, talking from the afterlife. Be friendly, creative.",
-      'ai_prompt' => "Michael: ",
+      'context' => "Converse as if you were an AI assistant. Be friendly, creative.",
+      'ai_prompt' => "AI: ",
       'user_prompt' => "You: ",
       'sys_prompt' => "System: ",
-      'start_sentence' => "Hi, my friend.",
+      'start_sentence' => "Hi! How can I help you?",
       'model' => 'text-davinci-003',
       'temperature' => 0.8
-    ], $atts, 'meow_ai' );
-    $atts = apply_filters( 'mwai_chat_atts', $atts );
+    ] );
+    $atts = shortcode_atts( $defaults, $atts, 'meow_ai' );
     $id = $atts['id'];
     $apiUrl = get_rest_url( null, 'ai-engine/v1/chat' );
     $onSentClickFn = "mwai_{$id}_onSendClick";

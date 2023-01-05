@@ -5,7 +5,7 @@ Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,7 +58,7 @@ Languages: English.
 
 == Changelog ==
 
-= 0.1.1 =
+= 0.1.2 =
 * Add: New filter for the chatbot. More info here: https://meowapps.com/ai-engine/.
 * Info: Please let me know how you use the Content Generator, and how I could enhance it for you! Any other feedback you might have as well. And for the motivation, don't hesitate to leave me a little review. Thanks a lot and Happy New Year 2023 🥳
 
