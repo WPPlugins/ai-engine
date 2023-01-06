@@ -94,12 +94,16 @@ class Meow_MWAI_Shortcodes {
 			$prompt = $params['prompt'];
       $model = $params['model'];
       $temperature = $params['temperature'];
+      $apiKey = $params['apiKey'];
 			$query = new Meow_MWAI_Query( $prompt, 1024 );
       if ( $model ) {
         $query->setModel( $model );
       }
       if ( $temperature ) {
         $query->setTemperature( $temperature );
+      }
+      if ( $apiKey ) {
+        $query->setApiKey( $apiKey );
       }
 			$answer = $this->core->ai->run( $query );
 			return new WP_REST_Response([ 'success' => true, 'data' => $answer->result, 'usage' => $answer->usage ], 200 );
@@ -118,7 +122,8 @@ class Meow_MWAI_Shortcodes {
       'sys_name' => "System: ",
       'start_sentence' => "Hi! How can I help you?",
       'model' => 'text-davinci-003',
-      'temperature' => 0.8
+      'temperature' => 0.8,
+      'api_key' => ''
     ] );
     $atts = shortcode_atts( $defaults, $atts, 'meow_ai' );
     $id = $atts['id'];
@@ -251,7 +256,8 @@ class Meow_MWAI_Shortcodes {
           const data = { 
             prompt: promptToUse,
             model: '<?= $atts['model'] ?>',
-            temperature: '<?= $atts['temperature'] ?>'
+            temperature: '<?= $atts['temperature'] ?>',
+            apiKey: '<?= $atts['api_key'] ?>',
           };
           console.log('Sent: ', data);
           fetch('<?= $apiUrl ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' },

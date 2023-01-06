@@ -104,6 +104,9 @@ class Meow_MWAI_Rest
 		if ( isset( $params['temperature'] ) ) {
 			$query->setTemperature( $params['temperature'] );
 		}
+		if ( isset( $params['apiKey'] ) ) {
+			$query->setApiKey( $params['apiKey'] );
+		}
 		return $query;
 	}
 

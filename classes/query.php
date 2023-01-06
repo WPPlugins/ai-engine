@@ -11,6 +11,7 @@ class Meow_MWAI_Query {
   public $temperature = 1;
   public $maxResults = 1;
   public $stop = null;
+  public $apiKey = null;
 
   public function __construct( $prompt = '', $maxTokens = 16, $model = 'text-davinci-003' ) {
     $this->prompt = $prompt;
@@ -83,4 +84,11 @@ class Meow_MWAI_Query {
     $this->stop = $stop;
   }
 
+  /**
+   * The API key to use.
+   * @param string $apiKey The API key.
+   */
+  public function setApiKey( $apiKey ) {
+    $this->apiKey = $apiKey;
+  }
 }

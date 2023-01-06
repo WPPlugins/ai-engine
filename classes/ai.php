@@ -39,36 +39,51 @@ class Meow_MWAI_AI {
   }
 
   public function run( $query ) {
+    $apiKey = $this->apiKey;
+    if ( !empty( $query->apiKey ) ) {
+      $apiKey = $query->apiKey;
+    }
     $url = 'https://api.openai.com/v1/completions';
     $options = array(
-      "http" => array(
-        "header" => "Content-Type: application/json\r\n" . "Authorization: Bearer " . $this->apiKey . "\r\n",
-        "method" => "POST",
-        "content" => json_encode( array(
-          "model" => $query->model,
-          "prompt" => $query->prompt,
-          "n" => $query->maxResults,
-          "max_tokens" => $query->maxTokens,
-          "temperature" => $query->temperature,
-        ) ),
-      ),
-      "ssl" => array(
-        "verify_peer" => false,
-        "verify_peer_name" => false,
-      )
+      "headers" => "Content-Type: application/json\r\n" . "Authorization: Bearer " . $apiKey . "\r\n",
+      "method" => "POST",
+      "body" => json_encode( array(
+        "model" => $query->model,
+        "prompt" => $query->prompt,
+        "n" => $query->maxResults,
+        "max_tokens" => $query->maxTokens,
+        "temperature" => $query->temperature,
+      ) ),
+      "sslverify" => false
     );
-    $context = stream_context_create( $options );
-    $response = file_get_contents( $url, false, $context );
-    if ( !$response ) {
-      throw new Exception( 'No answer from OpenAI.' );
+
+    try {
+      $response = wp_remote_get( $url, $options );
+      if ( is_wp_error( $response ) ) {
+        throw new Exception( $response->get_error_message() );
+      }
+      $response = wp_remote_retrieve_body( $response );
+      $data = json_decode( $response, true );
+      
+      // Error handling
+      if ( isset( $data['error'] ) ) {
+        $message = $data['error']['message'];
+        // If the message contains "Incorrect API key provided: THE_KEY.", replace the key by "----".
+        if ( preg_match( '/API key provided(: .*)\./', $message, $matches ) ) {
+          $message = str_replace( $matches[1], '', $message );
+        }
+        throw new Exception( $message );
+      }
+      $answer = new Meow_MWAI_Answer( $query );
+      $usage = $this->record_usage( $data['model'], $data['usage']['prompt_tokens'],
+        $data['usage']['completion_tokens'] );
+      $answer->setUsage( $usage );
+      $answer->setChoices( $data['choices'] );
+      return $answer;
     }
-    $data = json_decode( $response, true );
-    $answer = new Meow_MWAI_Answer( $query );
-    //error_log( print_r( $data, 1 ) );
-    $usage = $this->record_usage( $data['model'], $data['usage']['prompt_tokens'],
-      $data['usage']['completion_tokens'] );
-    $answer->setUsage( $usage );
-    $answer->setChoices( $data['choices'] );
-    return $answer;
+    catch ( Exception $e ) {
+      error_log( $e->getMessage() );
+      throw new Exception( 'Error while calling OpenAI: ' . $e->getMessage() );
+    }
   }
 }
