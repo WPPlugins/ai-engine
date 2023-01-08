@@ -10,7 +10,8 @@ class Meow_MWAI_Shortcodes {
     add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 
     // If we apply ChatGPT styles
-    //add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
+    add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
+    add_filter( 'mwai_chat_html', array( $this, 'spinner_style' ), 10, 2 );
   }
 
   function rest_api_init() {
@@ -25,6 +26,48 @@ class Meow_MWAI_Shortcodes {
 			var_dump( $e );
 		}
 	}
+
+  function spinner_style( $html, $atts ) {
+    // If needed, we can use the $id to apply styles
+    $id = $atts['id']; // This could be replace by the ID of a specific chatbot
+    return "
+      <style>
+        #mwai-chat-$id button {
+          position: relative;
+        }
+
+        #mwai-chat-$id button[disabled] span {
+          display: none;
+        }
+
+        #mwai-chat-$id button[disabled]::after {
+          content: '';
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          margin: auto;
+          border: 3px solid transparent;
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: mwai-button-spinner 1s ease infinite;
+        }
+
+        @keyframes mwai-button-spinner {
+          from {
+             transform: rotate(0turn);
+          }
+      
+          to {
+            transform: rotate(1turn);
+          }
+        }
+      </style>
+    " . $html;
+  }
 
   function chatgpt_style( $html, $atts ) {
     // If needed, we can use the $id to apply styles
@@ -141,7 +184,7 @@ class Meow_MWAI_Shortcodes {
         </div>
         <div class="mwai-input">
           <input type="text" placeholder="Type your message here..." />
-          <button>Send</button>
+          <button><span>Send</span></button>
         </div>
       </div>
 

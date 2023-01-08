@@ -5,7 +5,7 @@ Donate link: https://meowapps.com/donation/
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.3
-Stable tag: 0.1.5
+Stable tag: 0.1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,34 +54,41 @@ Languages: English.
 
 == Changelog ==
 
-= 0.1.5 =
-* Add: New 'api_key' parameter for the shortcode. The API Key can now be filtered, added through the shortcode, the filters, depending on your conditions.
-* Fix: Better handling of errors.
+= 0.1.7 (2023/01/08) =
+* Add: Handle the errors better in the UI.
+* Add: The chatbot can be styled a bit more easily.
 * Info: Share with me your feedback in the [Support Threads](https://wordpress.org/support/plugin/ai-engine/), I'll make it better for you! And of course, if you like the plugin, please leave a review on [WordPress.org](https://wordpress.org/support/plugin/ai-engine/reviews/). Thank you!
 
-= 0.1.4 =
+= 0.1.6 (2023/01/07) =
+* Fix: The timeout was 5s, which was too short for some requests. It's now 60s.
+
+= 0.1.5 (2023/01/06) =
+* Add: New 'api_key' parameter for the shortcode. The API Key can now be filtered, added through the shortcode, the filters, depending on your conditions.
+* Fix: Better handling of errors.
+
+= 0.1.4 (2023/01/05) =
 * Update: Sorry, the name of the parameters in the chatbot were confusing. I've changed them to make it more clear.
 * Add: New filter, and the possibility to add some CSS to the chatbot, directly through coding. Have a look on https://meowapps.com/ai-engine/.
 
-= 0.1.2 =
+= 0.1.2 (2023/01/05) =
 * Add: New filter for the chatbot. More info here: https://meowapps.com/ai-engine/.
 
-= 0.1.0 =
+= 0.1.0 (2023/01/03) =
 * Add: Content Generator (available under Tools and Posts).
 
-= 0.0.8 =
+= 0.0.8 (2023/01/01) =
 * Fix: A few fixes in the playground.
 
-= 0.0.7 =
+= 0.0.7 (2022/12/30) =
 * Fix: Little issue in the playground.
 * Add: Model and temperature in the playground.
 
-= 0.0.6 =
+= 0.0.6 (2022/12/30) =
 * Updated: Improved the chatbot, with more parameters (temperature, model), and a better layout (HTML only).
 
-= 0.0.3 =
+= 0.0.3 (2022/12/29) =
 * Add: Lightweight chatbot (beta).
 * Fix: Missing icon.
 
-= 0.0.1 =
+= 0.0.1 (2022/12/27) =
 * First release.
