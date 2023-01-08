@@ -1,0 +1,90 @@
+=== AI Engine: ChatGPT, GPT-3 Content Generation, AI Tools & Playground ===
+Contributors: TigrouMeow
+Tags: gpt-3, openai, ai, chatgpt, chatbot, content generation, automation, translation, title, excerpt, toolbox
+Donate link: https://meowapps.com/donation/
+Requires at least: 5.0
+Tested up to: 6.1
+Requires PHP: 7.3
+Stable tag: 0.1.6
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Elevate your WordPress site with AI Engine! This plugin generates content, suggests ways to improve your content, adds a ChatGPT-style chatbot, and includes an AI Playground. It also tracks your OpenAI usage and offers an internal API for other plugins. 
+
+== Description ==
+
+Ready to supercharge your WordPress site with the latest and greatest AI technology? The AI Engine plugin is here to help! With the AI Engine, you can generate content for your articles, suggest titles and excerpts for your posts, and track your OpenAI usage stats. Plus, there's a shortcode that lets you create a ChatGPT-style discussion on your website, and an AI Playground where you can try out a variety of tasks like translation, correction, SEO, and more.
+
+But we're just getting started! We'll be adding even more AI tools and features to the AI Engine based on your feedback, and we're even offering an API so other plugins can tap into its capabilities. Our goal is to create a comprehensive toolbox of AI tools and a framework that other plugins can build on. And don't forget, our other Meow Apps plugins will soon be able to access the AI Engine too.
+
+With the AI Engine, the possibilities are endless. Let's get started and make the most of this amazing technology!
+
+== Features ==
+
+* Generate fresh and engaging content for your site
+* Easily create new titles and excerpts for your posts
+* Keep track of your OpenAI usage with built-in statistics
+* Explore the AI Playground for a variety of tools like translation, correction, and ChatGPT-style discussions
+* Add a ChatGPT-style chatbot to your website with a simple shortcode
+* Upcoming features include translation to any language and the ability to improve specific paragraphs
+* And so much more on the way!
+
+== Content Generator ==
+
+Looking to add some fresh content to your site? Head to the Content Generator under Tools or Posts (look for Generate New or Content Generator). With this beta feature, you can generate articles with customizable headings, language, and other parameters. Feel free to play around with the settings and even modify the prompts to create exactly the content you need. We'd love to hear your feedback and ideas on how to make this feature even better, so don't hesitate to let us know how you're using it and what improvements you'd like to see.
+
+== Shortcode: ChatGPT on your website! ==
+
+Looking to add some AI-powered chat functionality to your website? Our chatbot is here to help! Using vanilla JS on the frontend, it's lightweight and easy to use. And since there's no CSS included, you have complete control over the styling - we even share some tips on how to make it look like ChatGPT on our website. The chatbot is accessible through a shortcode with lots of customizable parameters, so you can add it anywhere on your site and even have multiple instances on the same page to experiment with different options. Here's the shortcode and how to use it:
+
+[mwai_chat context="Converse as if you were Michael Jackson, talking from the afterlife." ai_name="Michael: " user_name="You: " start_sentence="Hi, my friend." ]
+
+== Open AI ==
+
+The AI Engine utilizes the API from [OpenAI](https://beta.openai.com). This plugin does not gather any information from your OpenAI account except for the number of tokens utilized. The data transmitted to the OpenAI servers primarily consists of the content of your article and the context you specify. The usage shown in the plugin's settings is just for reference. It is important to check your usage on the [OpenAI website](https://beta.openai.com/account/usage) for accurate information. Please also review their [Privacy Policy](https://openai.com/privacy/) and [Terms of Service](https://openai.com/terms/) for further information.
+
+== Usage ==
+
+1. Create an account at OpenAI.
+2. Create an API key and insert in the plugin settings (Meow Apps -> AI Engine).
+3. Enjoy the features of AI Engine!
+5. ... and always keep an eye on [your OpenAI usage](https://beta.openai.com/account/usage)!
+
+Languages: English.
+
+== Changelog ==
+
+= 0.1.6 (2023/01/07) =
+* Fix: The timeout was 5s, which was too short for some requests. It's now 60s.
+* Info: Share with me your feedback in the [Support Threads](https://wordpress.org/support/plugin/ai-engine/), I'll make it better for you! And of course, if you like the plugin, please leave a review on [WordPress.org](https://wordpress.org/support/plugin/ai-engine/reviews/). Thank you!
+
+= 0.1.5 (2023/01/06) =
+* Add: New 'api_key' parameter for the shortcode. The API Key can now be filtered, added through the shortcode, the filters, depending on your conditions.
+* Fix: Better handling of errors.
+
+= 0.1.4 (2023/01/05) =
+* Update: Sorry, the name of the parameters in the chatbot were confusing. I've changed them to make it more clear.
+* Add: New filter, and the possibility to add some CSS to the chatbot, directly through coding. Have a look on https://meowapps.com/ai-engine/.
+
+= 0.1.2 (2023/01/05) =
+* Add: New filter for the chatbot. More info here: https://meowapps.com/ai-engine/.
+
+= 0.1.0 (2023/01/03) =
+* Add: Content Generator (available under Tools and Posts).
+
+= 0.0.8 (2023/01/01) =
+* Fix: A few fixes in the playground.
+
+= 0.0.7 (2022/12/30) =
+* Fix: Little issue in the playground.
+* Add: Model and temperature in the playground.
+
+= 0.0.6 (2022/12/30) =
+* Updated: Improved the chatbot, with more parameters (temperature, model), and a better layout (HTML only).
+
+= 0.0.3 (2022/12/29) =
+* Add: Lightweight chatbot (beta).
+* Fix: Missing icon.
+
+= 0.0.1 (2022/12/27) =
+* First release.
