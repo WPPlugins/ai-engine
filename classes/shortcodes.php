@@ -4,14 +4,17 @@ class Meow_MWAI_Shortcodes {
   private $core = null;
   private $namespace = 'ai-engine/v1';
 
-  public function __construct( $core ) {
-    $this->core = $core;
+  public function __construct() {
+    global $mwai_core;
+    $this->core = $mwai_core;
     add_shortcode( 'mwai_chat', array( $this, 'chat' ) );
     add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 
     // If we apply ChatGPT styles
-    add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
-    add_filter( 'mwai_chat_html', array( $this, 'spinner_style' ), 10, 2 );
+    if ( $this->core->get_option( 'shortcode_chat_style' ) ) {
+      add_filter( 'mwai_chat_html', array( $this, 'chatgpt_style' ), 10, 2 );
+      add_filter( 'mwai_chat_html', array( $this, 'spinner_style' ), 10, 2 );
+    }
   }
 
   function rest_api_init() {
@@ -78,29 +81,52 @@ class Meow_MWAI_Shortcodes {
           background: #343541;
           color: white;
           font-size: 15px;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+
+        #mwai-chat-$id h2 {
+          font-size: 20px;
+        }
+
+        #mwai-chat-$id pre {
+          background: black;
+          color: white;
+          border-radius: 10px;
+          padding: 10px 15px;
+          break-after: auto;
+          font-size: 14px;
         }
 
         #mwai-chat-$id  ol {
           padding: 0;
           margin: 0 0 0 20px;
         }
-        
+
         #mwai-chat-$id .mwai-reply {
           display: flex;
-        }
-
-        #mwai-chat-$id .mwai-user, #mwai-chat-$id .mwai-ai {
           padding: 20px;
         }
-        
+
         #mwai-chat-$id .mwai-ai {
           background: #454654;
         }
 
-        #mwai-chat-$id .mwai-user-name, #mwai-chat-$id .mwai-ai-name {
+        #mwai-chat-$id .mwai-name {
           color: #a0a0a0;
-          margin-right: 5px;
-          min-width: 80px;
+          margin-right: 20px;
+        }
+
+        #mwai-chat-$id .mwai-text {
+          flex: auto;
+        }
+
+        #mwai-chat-$id .mwai-text > *:first-child {
+          margin-top: 0;
+        }
+
+        #mwai-chat-$id .mwai-text > *:last-child {
+          margin-bottom: 0;
         }
 
         #mwai-chat-$id .mwai-input {
@@ -136,6 +162,8 @@ class Meow_MWAI_Shortcodes {
 			$params = $request->get_json_params();
 			$prompt = $params['prompt'];
       $model = $params['model'];
+      $userName = $params['userName'];
+      $aiName = $params['aiName'];
       $temperature = $params['temperature'];
       $apiKey = $params['apiKey'];
 			$query = new Meow_MWAI_Query( $prompt, 1024 );
@@ -149,7 +177,10 @@ class Meow_MWAI_Shortcodes {
         $query->setApiKey( $apiKey );
       }
 			$answer = $this->core->ai->run( $query );
-			return new WP_REST_Response([ 'success' => true, 'data' => $answer->result, 'usage' => $answer->usage ], 200 );
+      $rawText = $answer->result;
+
+      $html = $this->core->markdown_to_html( $answer->result );
+			return new WP_REST_Response([ 'success' => true, 'answer' => $rawText, 'html' => $html, 'usage' => $answer->usage ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
@@ -161,7 +192,7 @@ class Meow_MWAI_Shortcodes {
       'id' => uniqid(),
       'context' => "Converse as if you were an AI assistant. Be friendly, creative.",
       'ai_name' => "AI: ",
-      'user_name' => "You: ",
+      'user_name' => "User: ",
       'sys_name' => "System: ",
       'start_sentence' => "Hi! How can I help you?",
       'model' => 'text-davinci-003',
@@ -176,6 +207,8 @@ class Meow_MWAI_Shortcodes {
     $convertToHtmlFn = "mwai_{$id}_convertToHtml";
     $aiName = trim($atts['ai_name']);
     $userName = trim($atts['user_name']);
+    $sysName = trim($atts['sys_name']);
+    $onGoingPrompt = "mwai_{$id}_onGoingPrompt";
     ob_start();
     ?>
 
@@ -189,90 +222,40 @@ class Meow_MWAI_Shortcodes {
       </div>
 
       <script>
+        var <?= $onGoingPrompt ?> = '<?= $atts['context'] ?>' + '\n\n';
+
         function <?= $convertToHtmlFn ?>(text) {
-          // Split the input text into an array of lines
-          const lines = text.split('\n');
-
-          // Initialize an empty array to store the HTML
-          const html = [];
-
-          // Initialize a variable to keep track of the current list type (none, bullet, or numbered)
-          let listType = 'none';
-
-          // Iterate over the lines
-          for (const line of lines) {
-            // Check if the line is a bullet point
-            if (line.startsWith('*')) {
-              // If the current list type is not a bullet point, start a new bullet point list
-              if (listType !== 'bullet') {
-                html.push('<ul>');
-                listType = 'bullet';
-              }
-              // Add the bullet point to the HTML
-              html.push(`<li>${line.substring(1).trim()}</li>`);
-            }
-            // Check if the line is a numbered list item
-            else if (line.match(/^\d+\./)) {
-              // If the current list type is not a numbered list, start a new numbered list
-              if (listType !== 'numbered') {
-                html.push('<ol>');
-                listType = 'numbered';
-              }
-              // Add the numbered list item to the HTML
-              html.push(`<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`);
-            }
-            // Otherwise, the line is not part of a list
-            else {
-              // If the current list type is not "none", close the current list
-              if (listType !== 'none') {
-                html.push(listType === 'bullet' ? '</ul>' : '</ol>');
-                listType = 'none';
-              }
-
-              // console.log('AI PROMPT: ', '|<?= $aiName ?>|');
-              // console.log('USER PROMPT: ', '|<?= $userName ?>|');
-              // console.log(line);
-
-              if (line.trim() === '') {
-                continue;
-              }
-              // If the line starts with the AI or user prompt, replace it with a span with the appropriate class
-              else if (line.startsWith('<?= $aiName ?>')) {
-                html.push(`<span class="mwai-ai-name"><?= $aiName ?> </span><span>${line.substring('<?= $aiName ?>'.length).trim()}</span>`);
-              }
-              else if (line.startsWith('<?= $userName ?>')) {
-                html.push(`<span class="mwai-user-name"><?= $userName ?> </span><span>${line.substring('<?= $userName ?>'.length).trim()}</span>`);
-              }
-              else {
-                // Otherwise, add the line as a paragraph to the HTML
-                console.log("We have something here...");
-                html.push(`<span>${line.trim()}</span>`);
-              }
-            }
-          }
-
-          // If the current list type is not "none", close the current list
-          if (listType !== 'none') {
-            html.push(listType === 'bullet' ? '</ul>' : '</ol>');
-          }
-
-          // Join the HTML array into a single string and return it
-          return html.join('');
+          return text;
         }
 
         // Function to add a reply in the conversation
         function <?= $addReplyFn ?>(text, type = 'user') {
           var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
           text = <?= $convertToHtmlFn ?>(text);
+          var mwaiClasses = 'mwai-reply';
           if (type === 'ai') {
-            conversation.innerHTML += '<div class="mwai-reply mwai-ai">' + text + '</div>';
+            mwaiClasses += ' mwai-ai';
           }
           else if (type === 'system') {
-            conversation.innerHTML += '<div class="mwai-reply mwai-system">' + text + '</div>';
+            mwaiClasses += ' mwai-system';
           }
           else {
-            conversation.innerHTML += '<div class="mwai-reply mwai-user">' + text + '</div>';
+            mwaiClasses += ' mwai-user';
           }
+          var html = '<div class="' + mwaiClasses + '">';
+          if (type === 'ai') {
+            html += '<span class="mwai-name"><?= $aiName ?></span>';
+          }
+          else if (type === 'system') {
+            html += '<span class="mwai-name"><?= $sysName ?></span>';
+          }
+          else {
+            html += '<span class="mwai-name"><?= $userName ?></span>';
+          }
+          html += '<span class="mwai-text">' + text + '</span>';
+          html += '</div>';
+
+          conversation.innerHTML += html;
         }
 
         // Function to request the completion
@@ -289,31 +272,34 @@ class Meow_MWAI_Shortcodes {
           button.disabled = true;
 
           // Add the user reply
-          <?= $addReplyFn ?>('<?= $userName ?>' + inputText, 'user');
+          <?= $addReplyFn ?>(inputText, 'user');
+          <?= $onGoingPrompt ?> += '<?= $userName ?>' + inputText + '\n';
           input.value = '';
           input.disabled = true;
 
-          // Request the completion and add the reply
-          var conversation = document.querySelector('#mwai-chat-<?= $id ?> .mwai-conversation');
-          var promptToUse = '<?= $atts['context'] ?>' + '\n\n' + conversation.innerText + '\n';
+          // Request the completion
+          <?= $onGoingPrompt ?> += '<?= $aiName ?>';
           const data = { 
-            prompt: promptToUse,
+            prompt: <?= $onGoingPrompt ?>,
+            userName: '<?= $userName ?>',
+            aiName: '<?= $aiName ?>',
             model: '<?= $atts['model'] ?>',
             temperature: '<?= $atts['temperature'] ?>',
             apiKey: '<?= $atts['api_key'] ?>',
           };
-          console.log('Sent: ', data);
+          console.log('[BOT] Sent: ', data);
           fetch('<?= $apiUrl ?>', { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
           })
           .then(response => response.json())
           .then(data => {
-            console.log('Received: ', data);
+            console.log('[BOT] Recv: ', data);
             if (!data.success) {
-              <?= $addReplyFn ?>('<?= $atts['sys_name'] ?>' + data.message, 'system');
+              <?= $addReplyFn ?>(data.message, 'system');
             }
             else {
-              <?= $addReplyFn ?>(data.data, 'ai');
+              <?= $addReplyFn ?>(data.html, 'ai');
+              <?= $onGoingPrompt ?> += data.answer + '\n';
             }
             button.disabled = false;
             input.disabled = false;
@@ -337,7 +323,7 @@ class Meow_MWAI_Shortcodes {
           <?= $onSentClickFn ?>(); 
         });
 
-        <?= $addReplyFn ?>('<?= $aiName ?>' + '<?= $atts['start_sentence'] ?>', 'ai');
+        <?= $addReplyFn ?>('<?= $atts['start_sentence'] ?>', 'ai');
       </script>
 
     <?php

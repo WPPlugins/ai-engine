@@ -207,7 +207,7 @@ class Meow_MWAI_Rest
 			$post->post_content = $content;
 			$post->post_status = 'draft';
 			$post->post_type = 'post';
-			$post->post_content = $this->core->markdown_to_blocks( $post->post_content );
+			$post->post_content = $this->core->markdown_to_html( $post->post_content );
 			$postId = wp_insert_post( $post );
 			return new WP_REST_Response([ 'success' => true, 'postId' => $postId ], 200 );
 		}

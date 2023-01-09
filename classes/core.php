@@ -7,6 +7,9 @@ define( 'MWAI_OPTIONS', [
 	'module_excerpts' => true,
 	'module_blocks' => false,
 	'shortcode_chat' => true,
+	'shortcode_chat_style' => true,
+	'shortcode_chat_html' => true,
+	'shortcode_chat_formatting' => true,
 	'openai_apikey' => false,
 	'openai_usage' => [],
 	'extra_models' => ""
@@ -38,7 +41,7 @@ class Meow_MWAI_Core
 			new Meow_MWAI_UI( $this );
 		}
 		if ( $this->get_option( 'shortcode_chat' ) ) {
-			new Meow_MWAI_Shortcodes( $this );
+			new Meow_MWAI_Shortcodes();
 		}
 	}
 
@@ -109,7 +112,7 @@ class Meow_MWAI_Core
 	}
 	#endregion
 
-	function markdown_to_blocks( $content ) {
+	function markdown_to_html( $content ) {
 		$Parsedown = new Parsedown();
 		$content = $Parsedown->text( $content );
 		return $content;
