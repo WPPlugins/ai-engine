@@ -205,9 +205,10 @@ class Meow_MWAI_Shortcodes {
     $onSentClickFn = "mwai_{$id}_onSendClick";
     $addReplyFn = "mwai_{$id}_addReply";
     $convertToHtmlFn = "mwai_{$id}_convertToHtml";
-    $aiName = trim($atts['ai_name']);
-    $userName = trim($atts['user_name']);
-    $sysName = trim($atts['sys_name']);
+    $aiName = addslashes( trim($atts['ai_name']) );
+    $userName = addslashes( trim($atts['user_name']) );
+    $sysName = addslashes( trim($atts['sys_name']) );
+    $context = addslashes( trim( $atts['context'] ) );
     $onGoingPrompt = "mwai_{$id}_onGoingPrompt";
     ob_start();
     ?>
@@ -222,7 +223,7 @@ class Meow_MWAI_Shortcodes {
       </div>
 
       <script>
-        var <?= $onGoingPrompt ?> = '<?= $atts['context'] ?>' + '\n\n';
+        var <?= $onGoingPrompt ?> = '<?= $context ?>' + '\n\n';
 
         function <?= $convertToHtmlFn ?>(text) {
           return text;
